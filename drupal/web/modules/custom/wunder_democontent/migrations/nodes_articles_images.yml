@@ -1,0 +1,50 @@
+id: nodes_articles_images
+label: Articles images
+migration_group: demo_content
+source:
+  plugin: csv
+  path: modules/custom/wunder_democontent/sources/articles.csv
+  ids:
+    - id
+  constants:
+    file_source_dir: modules/custom/wunder_democontent/sources/images
+    file_dest_uri: 'public://images/articles'
+    uid: 1
+    status: 1
+    langcode: en
+process:
+  # Skip if there are no images
+  skipped:
+    plugin: skip_on_empty
+    method: row
+    source: Image
+    message: Skipped because node has no images
+
+  langcode: constants/langcode
+  uid: constants/uid
+  status: constants/status
+
+  # Source path is constructed by combining the source directory with the filename
+  file_source:
+    plugin: concat
+    delimiter: /
+    source:
+      - constants/file_source_dir
+      - Image
+
+  # Destination path uses the same filename
+  file_dest:
+    plugin: concat
+    delimiter: /
+    source:
+      - constants/file_dest_uri
+      - Image
+
+  uri:
+    plugin: file_copy
+    source:
+      - '@file_source'
+      - '@file_dest'
+    file_exists: rename
+destination:
+  plugin: entity:file
