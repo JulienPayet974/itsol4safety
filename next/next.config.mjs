@@ -19,7 +19,7 @@ const nextConfig = {
   cacheMaxMemorySize: 0, // Disable in-memory cache
 
   images: {
-    remotePatterns: [
+    /*remotePatterns: [
       process.env.DRUPAL_BASE_URL_INTERNAL_IMAGES,
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL,
     ].map((url = "") => {
@@ -32,7 +32,8 @@ const nextConfig = {
         hostname,
         pathname: "**",
       };
-    }),
+    }),*/
+    unoptimized: true, //test pour le CI/CD github
   },
 
   experimental: {
