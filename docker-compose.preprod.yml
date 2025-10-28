@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
+  drupal:
+    build: ./drupal
+    depends_on:
+      - db
+    environment:
+      DRUPAL_DB_HOST: db
+      DRUPAL_DB_NAME: drupal
+      DRUPAL_DB_USER: drupal
+      DRUPAL_DB_PASSWORD: drupal
+    ports:
+      - "8081:80"          # Pré-prod Drupal
+    volumes:
+      - drupal_files:/var/www/html/web/sites/default/files
+    restart: unless-stopped
+
+  next:
+    build: ./next
+    depends_on:
+      - drupal
+    environment:
+      # Next parlera à Drupal via le nom de service 'drupal'
+      NEXT_PUBLIC_DRUPAL_BASE_URL: http://drupal
+      NODE_ENV: production
+    ports:
+      - "3001:3000"        # Pré-prod Next
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  drupal_files:

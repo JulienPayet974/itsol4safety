@@ -1,25 +1,18 @@
-FROM node:20-alpine
-
+# Build
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copie les fichiers nécessaires
-COPY package*.json ./
+COPY next/package*.json ./
 RUN npm ci
-
-# Copie tout ton code
-COPY . .
-
-# On donne l'adresse du Drupal de démo (pour que ça s'affiche)
-ENV NEXT_PUBLIC_DRUPAL_BASE_URL=https://next-drupal-starterkit.dev.wdr.io
-ENV DRUPAL_BASE_URL_INTERNAL_IMAGES=https://next-drupal-starterkit.dev.wdr.io
-ENV NODE_ENV=production
-ENV PORT=3100
-ENV CIRCLECI=1
-
-# Build du site Next
+COPY next/ .
+# Le starter codegen GraphQL pendant le build; npm run build s'en charge
 RUN npm run build
 
-EXPOSE 3100
-
-# Lancement du serveur
-CMD ["npm", "run", "start"]
+# Runtime (standalone)
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/public ./public
+COPY --from=build /app/.next/static ./.next/static
+EXPOSE 3000
+CMD ["node", "server.js"]
