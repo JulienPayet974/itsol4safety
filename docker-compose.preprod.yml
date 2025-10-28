@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   drupal:
-    build: ./drupal
+    image: docker.io/julien974/itsol4safety-drupal:preprod-latest
     depends_on:
       - db
     environment:
@@ -22,21 +22,20 @@ services:
       DRUPAL_DB_USER: drupal
       DRUPAL_DB_PASSWORD: drupal
     ports:
-      - "8081:80"          # Pré-prod Drupal
+      - "8081:80"
     volumes:
       - drupal_files:/var/www/html/web/sites/default/files
     restart: unless-stopped
 
   next:
-    build: ./next
+    image: docker.io/julien974/itsol4safety-next:preprod-latest
     depends_on:
       - drupal
     environment:
-      # Next parlera à Drupal via le nom de service 'drupal'
       NEXT_PUBLIC_DRUPAL_BASE_URL: http://drupal
       NODE_ENV: production
     ports:
-      - "3001:3000"        # Pré-prod Next
+      - "3001:3000"
     restart: unless-stopped
 
 volumes:

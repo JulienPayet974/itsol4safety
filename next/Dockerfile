@@ -4,10 +4,9 @@ WORKDIR /app
 COPY next/package*.json ./
 RUN npm ci
 COPY next/ .
-# Le starter codegen GraphQL pendant le build; npm run build s'en charge
 RUN npm run build
 
-# Runtime (standalone)
+# Runtime
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production

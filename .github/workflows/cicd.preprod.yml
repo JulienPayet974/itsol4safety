@@ -1,0 +1,52 @@
+name: Build & Deploy (preprod)
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  IMAGE_NEXT: docker.io/julien974/itsol4safety-next
+  IMAGE_DRUPAL: docker.io/julien974/itsol4safety-drupal
+  TAG_LATEST: preprod-latest
+  TAG_COMMIT: preprod-${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push Drupal
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: drupal/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_DRUPAL }}:${{ env.TAG_COMMIT }}
+            ${{ env.IMAGE_DRUPAL }}:${{ env.TAG_LATEST }}
+
+      - name: Build & push Next
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: next/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NEXT }}:${{ env.TAG_COMMIT }}
+            ${{ env.IMAGE_NEXT }}:${{ env.TAG_LATEST }}
+
+      - name: Redeploy Portainer stack
+        if: ${{ secrets.PORTAINER_STACK_WEBHOOK != '' }}
+        run: |
+          curl -X POST "${{ secrets.PORTAINER_STACK_WEBHOOK }}"
