@@ -1,2 +1,2 @@
 // next/src/lib/gql.ts
-export {};
+export * from './gql/graphql';
